@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Test Game</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+        var socket = io();
+        const player = {
+            gameId: 0
+        };
+
+        let players = {};
+
+        let ctx;
+
+        //wait for DOM to render
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded');
+            //get canvas element
+            const canvas = document.querySelector('canvas');
+            //set canvas width and height
+            canvas.width = 500;
+            canvas.height = 500;
+            //get canvas context
+            ctx = canvas.getContext('2d');
+            //paint the canvas
+        });
+        
+        socket.on('connect', function(){
+            console.log('connected');
+        });
+
+        socket.on('gameId', function(data){
+            console.log(data);
+            player.gameId = data;
+        });
+
+        socket.on('updateGameState', function(data){
+            console.log(data);
+            players = data;
+            paintGame();
+        });
+
+        addEventListener('keydown', function(e) {
+
+            if (e.keyCode == 40) {
+
+                console.log('down');
+                if (players[player.gameId].y == 49) return
+
+                socket.emit('move', 'down');
+            }
+            if (e.keyCode == 37) {
+
+                console.log('left');
+                if (players[player.gameId].x == 0 ) return
+
+                socket.emit('move', 'left');
+            }
+            if (e.keyCode == 38) {
+
+                console.log('up');
+                if (players[player.gameId].y == 0 ) return
+
+                socket.emit('move', 'up');
+            }
+            if (e.keyCode == 39) {
+
+                console.log('right');
+                if (players[player.gameId].x == 49) return
+
+                socket.emit('move', 'right');
+            }
+        
+            paintGame();
+        });
+
+        //funtion to paint the player movements on the canvas
+        function paintGame() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, 500, 500);
+            //paint other players
+            for (let i in players) {
+                ctx.fillStyle = '#0f0';
+                ctx.fillRect(players[i].x * 10, players[i].y * 10, 10, 10); 
+            }
+        }
+
+    </script>
+</head>
+<body>
+    <div id="game-container">
+        <canvas>
+
+        </canvas>
+    </div>
+</body>
+</html>
